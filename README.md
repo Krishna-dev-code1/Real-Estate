@@ -31,10 +31,10 @@ A full-stack real estate web application that allows users to browse, search, an
 
 ## Project Structure
 
-Real-Estate  
-│  
-├── Frontend  
-│   └── React application responsible for UI and user interaction  
-│  
-├── Backend  
-│   └── Spring Boot application handling server logic and APIs
+Real-Estate
+│
+├── Frontend
+│   └── React application responsible for UI and user interaction
+│
+└── Backend
+└── Spring Boot application handling server logic and APIs
