@@ -50,6 +50,7 @@ public class PropertyController {
         if (sellerOptional.isEmpty()) {
             return ResponseEntity.badRequest().body("Seller with ID " + sellerId + " not found");
         }
+
         User seller = sellerOptional.get();
 
         Property property = new Property();
@@ -92,17 +93,13 @@ public class PropertyController {
     ) {
         logger.info("Updating property with ID: " + id);
 
-        Optional<Property> propertyOptional = propertyService.getPropertyById(id);
-        if (propertyOptional.isEmpty()) {
-            return ResponseEntity.badRequest().body("Property not found with ID: " + id);
-        }
+        Property property = propertyService.getPropertyById(id);
 
         Optional<User> sellerOptional = userRepository.findById(sellerId);
         if (sellerOptional.isEmpty()) {
             return ResponseEntity.badRequest().body("Seller with ID " + sellerId + " not found");
         }
 
-        Property property = propertyOptional.get();
         User seller = sellerOptional.get();
 
         // Check if the seller owns this property
@@ -110,7 +107,6 @@ public class PropertyController {
             return ResponseEntity.badRequest().body("You are not authorized to update this property");
         }
 
-        // Update property fields
         property.setPropertyTitle(propertyTitle);
         property.setDescription(description);
         property.setPrice(price);
@@ -126,6 +122,7 @@ public class PropertyController {
 
         Property updatedProperty = propertyService.updateProperty(property, images);
         logger.info("Property updated successfully with ID: " + id);
+
         return ResponseEntity.ok(updatedProperty);
     }
 
@@ -133,33 +130,41 @@ public class PropertyController {
     @GetMapping("/all")
     public ResponseEntity<List<Property>> getAllProperties() {
         logger.info("Fetching all properties");
+
         List<Property> properties = propertyService.getAllProperties();
+
         return ResponseEntity.ok(properties);
     }
 
     // Get property by ID
     @GetMapping("/{id}")
     public ResponseEntity<?> getPropertyById(@PathVariable Long id) {
-        logger.info("Fetching property with ID: " + id);
-        Optional<Property> property = propertyService.getPropertyById(id);
 
-        if (property.isPresent()) {
-            return ResponseEntity.ok(property.get());
-        } else {
-            return ResponseEntity.badRequest().body("Property not found with ID: " + id);
-        }
+        logger.info("Fetching property with ID: " + id);
+
+        Property property = propertyService.getPropertyById(id);
+
+        return ResponseEntity.ok(property);
     }
 
     // Get properties by type (BUY/RENT/SELL)
     @GetMapping("/type/{type}")
     public ResponseEntity<?> getPropertiesByType(@PathVariable String type) {
+
         logger.info("Fetching properties for type: " + type);
+
         try {
+
             List<Property> properties = propertyService.getPropertiesByType(type);
+
             logger.info("Fetched " + properties.size() + " properties");
+
             return ResponseEntity.ok(properties);
+
         } catch (Exception e) {
+
             logger.severe("Error fetching properties: " + e.getMessage());
+
             return ResponseEntity.internalServerError().body("Error fetching properties.");
         }
     }
@@ -167,7 +172,9 @@ public class PropertyController {
     // Delete property by ID
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteProperty(@PathVariable Long id) {
+
         logger.info("Deleting property with ID: " + id);
+
         boolean isDeleted = propertyService.deleteProperty(id);
 
         if (isDeleted) {
@@ -180,12 +187,19 @@ public class PropertyController {
     // Update property status
     @PutMapping("/{id}/status")
     public ResponseEntity<?> updatePropertyStatus(@PathVariable Long id, @RequestParam PropertyStatus status) {
+
         logger.info("Updating status for property with ID: " + id);
+
         try {
+
             Property updatedProperty = propertyService.updatePropertyStatus(id, status);
+
             return ResponseEntity.ok(updatedProperty);
+
         } catch (PropertyException e) {
+
             logger.severe("Error updating property status: " + e.getMessage());
+
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }

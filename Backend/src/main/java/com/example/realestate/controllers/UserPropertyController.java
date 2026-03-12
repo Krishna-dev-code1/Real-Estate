@@ -2,7 +2,6 @@ package com.example.realestate.controllers;
 
 import java.util.List;
 
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,7 +25,7 @@ public class UserPropertyController {
     }
 
     @GetMapping("/properties")
-    public ResponseEntity<Page<Property>> findPropertyByFilters(
+    public ResponseEntity<List<Property>> findPropertyByFilters(
             @RequestParam String propertyType,
             @RequestParam List<String> location,
             @RequestParam Integer minPrice,
@@ -36,10 +35,9 @@ public class UserPropertyController {
             @RequestParam Integer pageNumber,
             @RequestParam Integer pageSize) {
 
-        Page<Property> res = propertyService.getAllProperties(
-                propertyType, location, minPrice, maxPrice, transactionType, sort, pageNumber, pageSize);
+        List<Property> properties = propertyService.getAllProperties();
 
-        return new ResponseEntity<>(res, HttpStatus.OK);
+        return new ResponseEntity<>(properties, HttpStatus.OK);
     }
 
     @GetMapping("/properties/id/{propertyId}")
@@ -53,7 +51,7 @@ public class UserPropertyController {
     @GetMapping("/properties/search")
     public ResponseEntity<List<Property>> searchPropertyHandler(@RequestParam String q) {
 
-        List<Property> properties = propertyService.searchProperty(q);
+        List<Property> properties = propertyService.getAllProperties();
 
         return new ResponseEntity<>(properties, HttpStatus.OK);
     }

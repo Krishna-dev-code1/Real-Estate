@@ -33,7 +33,7 @@ public class ReviewServiceImplementation implements ReviewService {
         Review review = new Review();
         review.setUser(user);
         review.setProperty(property);
-        review.setReview(req.getReview());
+        review.setReviewText(req.getReview());
         review.setCreatedAt(LocalDateTime.now());
 
         propertyRepository.save(property);
@@ -42,6 +42,7 @@ public class ReviewServiceImplementation implements ReviewService {
 
     @Override
     public List<Review> getAllReviews(Long propertyId) {
-        return reviewRepository.getAllPropertyReviews(propertyId);
+        List<Review> reviews = reviewRepository.findByPropertyId(propertyId);
+        return reviews;
     }
 }

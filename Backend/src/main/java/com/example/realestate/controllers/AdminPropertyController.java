@@ -29,25 +29,40 @@ public class AdminPropertyController {
 
     @GetMapping("/{propertyId}")
     public ResponseEntity<Property> getPropertyById(@PathVariable Long propertyId) {
+
         Property property = propertyService.getPropertyById(propertyId);
+
         return new ResponseEntity<>(property, HttpStatus.OK);
     }
 
     @GetMapping("/all")
     public ResponseEntity<List<Property>> getAllProperties() {
+
         List<Property> properties = propertyService.getAllProperties();
+
         return new ResponseEntity<>(properties, HttpStatus.OK);
     }
 
     @PutMapping("/{propertyId}/update")
-    public ResponseEntity<Property> updateProperty(@PathVariable Long propertyId, @RequestBody Property updatedProperty) {
-        Property property = propertyService.updateProperty(propertyId, updatedProperty);
+    public ResponseEntity<Property> updateProperty(
+            @PathVariable Long propertyId,
+            @RequestBody Property updatedProperty) {
+
+        updatedProperty.setId(propertyId);
+
+        Property property = propertyService.updateProperty(updatedProperty);
+
         return new ResponseEntity<>(property, HttpStatus.OK);
     }
 
     @DeleteMapping("/{propertyId}/delete")
     public ResponseEntity<ApiResponse> deleteProperty(@PathVariable Long propertyId) {
-        propertyService.deleteProperty(propertyId);
-        return new ResponseEntity<>(new ApiResponse("Property deleted successfully", true), HttpStatus.OK);
+
+        boolean deleted = propertyService.deleteProperty(propertyId);
+
+        return new ResponseEntity<>(
+                new ApiResponse("Property deleted successfully", deleted),
+                HttpStatus.OK
+        );
     }
 }

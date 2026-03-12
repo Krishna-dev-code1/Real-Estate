@@ -31,7 +31,7 @@ public class UserController {
     @PostMapping("/register")
     public ResponseEntity<Map<String, Object>> registerUser(@Valid @RequestBody User user) {
         User registeredUser = userService.saveUser(user);
-        String token = jwtUtil.generateToken(registeredUser.getEmail());
+        String token = jwtUtil.generateToken(registeredUser.getEmail(), registeredUser.getRole().name());
 
         UserResponse userResponse = mapUserToResponse(registeredUser);
 
@@ -52,7 +52,7 @@ public class UserController {
 
         if (userOptional.isPresent() && userService.validatePassword(password, userOptional.get().getPassword())) {
             User user = userOptional.get();
-            String token = jwtUtil.generateToken(email);
+            String token = jwtUtil.generateToken(email, user.getRole().name());
 
             UserResponse userResponse = mapUserToResponse(user);
 

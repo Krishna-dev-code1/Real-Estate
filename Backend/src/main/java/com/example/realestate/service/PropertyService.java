@@ -4,6 +4,8 @@ import com.example.realestate.exception.PropertyException;
 import com.example.realestate.model.Property;
 import com.example.realestate.user.domain.PropertyStatus;
 import com.example.realestate.repository.PropertyRepository;
+import com.example.realestate.request.CreatePropertyRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,6 +30,28 @@ public class PropertyService {
     private static final String UPLOAD_DIR = "uploads/";
     private static final String BASE_URL = "http://localhost:9090/uploads/";
 
+    // NEW METHOD ADDED
+    public Property createProperty(CreatePropertyRequest request) {
+
+        Property property = new Property();
+
+        property.setPropertyTitle(request.getPropertyTitle());
+        property.setDescription(request.getDescription());
+        property.setPrice((double) request.getPrice());
+        property.setDiscountedPrice((double) request.getDiscountedPrice());
+        property.setDiscountPercent((double) request.getDiscountPercent());
+        property.setLocation(request.getLocation());
+        property.setPropertyCategory(request.getPropertyCategory());
+        property.setNumberOfBedrooms(request.getNumberOfBedrooms());
+        property.setNumberOfBathrooms(request.getNumberOfBathrooms());
+        property.setSquareFeet((double) request.getSquareFeet());
+        property.setPropertyType(request.getPropertyType());
+
+        property.setStatus(PropertyStatus.ACTIVE);
+
+        return propertyRepository.save(property);
+    }
+
     public Property addProperty(Property property, MultipartFile[] images) {
         List<String> imageUrls = new ArrayList<>();
 
@@ -37,20 +61,20 @@ public class PropertyService {
         }
 
         property.setImageUrls(imageUrls);
-        property.setStatus(PropertyStatus.ACTIVE); // Default status when adding a property
+        property.setStatus(PropertyStatus.ACTIVE);
         return propertyRepository.save(property);
     }
 
-    // Updated method to handle property updates with images
     public Property updateProperty(Property property, MultipartFile[] images) {
-        // Fetch the existing property to preserve fields not sent in the request
+
         Optional<Property> existingPropertyOpt = propertyRepository.findById(property.getId());
+
         if (existingPropertyOpt.isEmpty()) {
             throw new RuntimeException("Property not found with ID: " + property.getId());
         }
+
         Property existingProperty = existingPropertyOpt.get();
 
-        // Update fields
         existingProperty.setPropertyTitle(property.getPropertyTitle());
         existingProperty.setDescription(property.getDescription());
         existingProperty.setPrice(property.getPrice());
@@ -62,19 +86,16 @@ public class PropertyService {
         existingProperty.setNumberOfBathrooms(property.getNumberOfBathrooms());
         existingProperty.setSquareFeet(property.getSquareFeet());
         existingProperty.setPropertyType(property.getPropertyType());
-        existingProperty.setSeller(property.getSeller());
-
-        // Handle images: Replace existing images if new ones are provided
+       
         if (images != null && images.length > 0) {
             createUploadDirectoryIfNeeded();
             List<String> newImageUrls = saveImages(images);
-            existingProperty.setImageUrls(newImageUrls); // Replace old images
-        } // Else, keep existing images
+            existingProperty.setImageUrls(newImageUrls);
+        }
 
         return propertyRepository.save(existingProperty);
     }
 
-    // Keep the old method for backward compatibility (if needed)
     public Property updateProperty(Property property) {
         return propertyRepository.save(property);
     }
@@ -84,8 +105,9 @@ public class PropertyService {
                 .orElseThrow(() -> new PropertyException("Property not found with ID: " + id));
     }
 
-    public Optional<Property> getPropertyById(Long id) {
-        return propertyRepository.findById(id);
+    public Property getPropertyById(Long id) {
+        return propertyRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Property not found"));
     }
 
     public List<Property> getAllProperties() {
@@ -112,6 +134,7 @@ public class PropertyService {
 
     private void createUploadDirectoryIfNeeded() {
         Path uploadPath = Paths.get(UPLOAD_DIR);
+
         if (!Files.exists(uploadPath)) {
             try {
                 Files.createDirectories(uploadPath);
@@ -124,16 +147,24 @@ public class PropertyService {
     }
 
     private List<String> saveImages(MultipartFile[] images) {
+
         List<String> imageUrls = new ArrayList<>();
 
         for (MultipartFile image : images) {
+
             try {
+
                 String fileName = UUID.randomUUID() + "_" + image.getOriginalFilename();
                 Path destinationPath = Paths.get(UPLOAD_DIR, fileName);
+
                 Files.copy(image.getInputStream(), destinationPath);
+
                 imageUrls.add(BASE_URL + fileName);
+
             } catch (IOException e) {
+
                 logger.severe("Failed to store file: " + image.getOriginalFilename() + " - " + e.getMessage());
+
                 throw new RuntimeException("Failed to store file: " + image.getOriginalFilename(), e);
             }
         }
